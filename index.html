@@ -5,6 +5,7 @@
   <title>Threshold Simulation for Classifiers</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  
   <style>
     :root {
       --primary-color: #7f6af7;
@@ -256,8 +257,8 @@
         <section class="card">
           <h3>Distribution and Predictions</h3>
 
-          <!-- SVG – height will be overwritten by JS when needed -->
-          <svg id="scorePlot" width="100%" height="320"></svg>
+          <!-- SVG – dynamic height, dynamic width -->
+          <svg id="scorePlot" preserveAspectRatio="none" width="100%" height="320"></svg>
 
           <div class="slider-center">
             <div class="slider-box">
@@ -283,16 +284,16 @@
           <div class="card">
             <h3>Confusion Matrix</h3>
             <table class="confusion-matrix-table">
-              <tr><th></th><th>Actual Positive</th><th>Actual Negative</th></tr>
+              <tr><th></th><th>Actual&nbsp;Positive</th><th>Actual&nbsp;Negative</th></tr>
               <tr>
-                <td class="row-label">Predicted Positive</td>
-                <td class="cm-tp">▢<br>TP = <span id="cm-tp-count">0</span></td>
-                <td class="cm-fp">◉<br>FP = <span id="cm-fp-count">0</span></td>
+                <td class="row-label">Pred.&nbsp;Positive</td>
+                <td class="cm-tp">▢<br>TP&nbsp;=&nbsp;<span id="cm-tp-count">0</span></td>
+                <td class="cm-fp">◉<br>FP&nbsp;=&nbsp;<span id="cm-fp-count">0</span></td>
               </tr>
               <tr>
-                <td class="row-label">Predicted Negative</td>
-                <td class="cm-fn">▣<br>FN = <span id="cm-fn-count">0</span></td>
-                <td class="cm-tn">○<br>TN = <span id="cm-tn-count">0</span></td>
+                <td class="row-label">Pred.&nbsp;Negative</td>
+                <td class="cm-fn">▣<br>FN&nbsp;=&nbsp;<span id="cm-fn-count">0</span></td>
+                <td class="cm-tn">○<br>TN&nbsp;=&nbsp;<span id="cm-tn-count">0</span></td>
               </tr>
             </table>
           </div>
@@ -306,7 +307,7 @@
             <div class="metric-box"><div class="metric-label">Accuracy</div><div class="metric-value" id="acc-metric">0.00</div></div>
             <div class="metric-box"><div class="metric-label">Precision</div><div class="metric-value" id="prec-metric">0.00</div></div>
             <div class="metric-box"><div class="metric-label">Recall</div><div class="metric-value" id="recall-metric">0.00</div></div>
-            <div class="metric-box"><div class="metric-label">F1 Score</div><div class="metric-value" id="f1-metric">0.00</div></div>
+            <div class="metric-box"><div class="metric-label">F1&nbsp;Score</div><div class="metric-value" id="f1-metric">0.00</div></div>
           </div>
         </details>
       </div>
@@ -317,12 +318,13 @@
     </footer>
   </div>
 
+  <!-- ==================  SCRIPT  ================== -->
   <script>
     /* ───────── constants ───────── */
-    const SYMBOL_SPACING_Y   = 18;   // tighter vertical gap
-    const SYMBOL_HALF_WIDTH  = 8;    // half glyph width for over-hang
-    const fixedHeight        = 300;
-    const margin             = { top:20, right:20, bottom:40, left:40 };
+    const SYMBOL_SPACING_Y  = 18;  // vertical gap between stacked dots
+    const SYMBOL_HALF_WIDTH = 8;   // half glyph width for x-axis over-hang
+    const fixedHeight       = 300; // minimum inner plot height
+    const margin            = { top:20, right:20, bottom:40, left:40 };
 
     /* ───────── dataset factory ───────── */
     function generateDatasets() {
@@ -351,20 +353,16 @@
       return datasets;
     }
 
-    /* ───────── globals & SVG scaffold ───────── */
-    let datasets        = generateDatasets();
-    let currentDataset  = 'separated';
-    let currentThreshold= 0.5;
+    /* ───────── globals & static SVG scaffold ───────── */
+    const datasets = generateDatasets();
+    let currentDataset   = 'separated';
+    let currentThreshold = 0.5;
 
-    const svg = d3.select('#scorePlot').attr('data-h', fixedHeight);
-
-    const width = svg.node().getBoundingClientRect().width
-                  - margin.left - margin.right;
-
+    const svg   = d3.select('#scorePlot').attr('data-h', fixedHeight);
     const plotG = svg.append('g')
-                     .attr('transform',`translate(${margin.left},${margin.top})`);
+                     .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const xScale = d3.scaleLinear().domain([0,1]).range([0,width]);
+    const xScale = d3.scaleLinear().domain([0, 1]);   // range filled each draw
 
     plotG.append('g').attr('class','axis x-axis');
     plotG.append('text')
@@ -382,18 +380,28 @@
     function updateVisualization() {
       const data = datasets[currentDataset];
 
-      /* bin to nearest 0.1 */
-      const tickPositions = d3.range(0,1.1,0.1);
+      /* current usable width of the plot area */
+      const plotWidth = svg.node().getBoundingClientRect().width
+                        - margin.left - margin.right;
+
+      /* make scale & SVG aware of that width */
+      xScale.range([0, plotWidth]);
+      svg.attr('viewBox',
+        `0 0 ${plotWidth + margin.left + margin.right}`
+        +` ${+svg.attr('data-h') + margin.top + margin.bottom}`);
+
+      /* bin data to nearest 0.1 */
+      const tickPositions = d3.range(0, 1.1, 0.1);
       const tickBins = {}; tickPositions.forEach(t => tickBins[t] = []);
       data.forEach(d => {
         const pred   = d.score >= currentThreshold ? 1 : 0;
         const cat    = d.label ? (pred ? 'tp':'fn') : (pred ? 'fp':'tn');
         const tick   = tickPositions.reduce((p,c)=>
-                       Math.abs(c-d.score) < Math.abs(p-d.score) ? c : p);
+                        Math.abs(c-d.score) < Math.abs(p-d.score) ? c : p);
         tickBins[tick].push({ ...d, category:cat });
       });
 
-      /* dynamic height */
+      /* dynamic height so stacks never clip */
       const bottomPadding  = 6;
       const textHeight     = 18;
       const maxStackDepth  = d3.max(Object.values(tickBins), b => b.length) || 0;
@@ -403,16 +411,18 @@
       );
       const innerHeight = height - bottomPadding;
 
+      /* only touch svg.height / viewBox if that changed  */
       if (+svg.attr('data-h') !== height) {
         svg.attr('viewBox',
-             `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+          `0 0 ${plotWidth + margin.left + margin.right}`
+          +` ${height + margin.top + margin.bottom}`)
            .attr('height', height + margin.top + margin.bottom)
            .attr('data-h', height);
       }
 
-      /* axes */
+      /* x-axis */
       plotG.select('.x-axis')
-           .attr('transform',`translate(0,${innerHeight})`)
+           .attr('transform', `translate(0,${innerHeight})`)
            .call(
              d3.axisBottom(xScale)
                .ticks(11)
@@ -422,28 +432,29 @@
            )
            .selectAll('text').attr('font-size','14px');
 
-      /* extend domain line so symbols fit */
+      /* extend domain line so symbols over-hang nicely */
       plotG.select('.x-axis').select('path.domain')
-           .attr('d', `M${-SYMBOL_HALF_WIDTH},0H${width + SYMBOL_HALF_WIDTH}`);
+           .attr('d', `M${-SYMBOL_HALF_WIDTH},0H${plotWidth + SYMBOL_HALF_WIDTH}`);
 
       plotG.select('.x-axis-label')
-           .attr('x', width/2)
+           .attr('x', plotWidth / 2)
            .attr('y', innerHeight + margin.bottom - 5);
 
+      /* threshold guide */
       thresholdLine
         .attr('x1', xScale(currentThreshold))
         .attr('x2', xScale(currentThreshold))
         .attr('y1', 0)
         .attr('y2', innerHeight);
 
-      /* shaded area now includes the over-hang */
+      /* shaded FP area */
       shadeRect
         .attr('x', xScale(currentThreshold))
         .attr('y', 0)
-        .attr('width', Math.max(0, width + SYMBOL_HALF_WIDTH - xScale(currentThreshold)))
+        .attr('width', Math.max(0, plotWidth + SYMBOL_HALF_WIDTH - xScale(currentThreshold)))
         .attr('height', innerHeight);
 
-      /* dot stacks */
+      /* stacked glyphs */
       const stacked = [];
       Object.entries(tickBins).forEach(([tick, bin]) => {
         bin.forEach((d,i)=>stacked.push({
@@ -501,15 +512,15 @@
     }
 
     /* ───────── interactions ───────── */
-    document.getElementById('thresholdSlider').addEventListener('input', e=>{
+    document.getElementById('thresholdSlider').addEventListener('input', e => {
       currentThreshold = +e.target.value;
       document.getElementById('thresholdValue').textContent = currentThreshold.toFixed(2);
       updateVisualization();
     });
 
-    document.querySelectorAll('.dataset-btn').forEach(btn=>{
-      btn.addEventListener('click',function(){
-        document.querySelectorAll('.dataset-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.dataset-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.dataset-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         currentDataset   = this.dataset.ds;
         currentThreshold = 0.5;
@@ -519,8 +530,9 @@
       });
     });
 
-    /* ───────── initial draw ───────── */
+    /* ───────── initial draw & resize hook ───────── */
     updateVisualization();
+    window.addEventListener('resize', updateVisualization);
   </script>
 </body>
 </html>
