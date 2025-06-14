@@ -5,7 +5,6 @@
   <title>Threshold Simulation for Classifiers</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-  
   <style>
     :root {
       --primary-color: #7f6af7;
@@ -124,11 +123,18 @@
       gap: 28px;
     }
 
-    .card {
+    .card, details.card {
       background: var(--card-background);
       border-radius: var(--border-radius);
-      padding: 26px 22px 22px;
       box-shadow: var(--card-shadow);
+    }
+
+    .card {
+      padding: 26px 22px 22px;
+    }
+
+    details.card {
+      padding: 22px;
     }
 
     .confusion-matrix-table {
@@ -182,13 +188,6 @@
       font-size: 1.44em;
       font-weight: bold;
       color: #252550;
-    }
-
-    details.card {
-      background: var(--card-background);
-      border-radius: var(--border-radius);
-      padding: 22px;
-      box-shadow: var(--card-shadow);
     }
 
     details.card summary {
@@ -318,7 +317,6 @@
     </footer>
   </div>
 
-  <!-- ==================  SCRIPT  ================== -->
   <script>
     /* ───────── constants ───────── */
     const SYMBOL_SPACING_Y  = 18;  // vertical gap between stacked dots
@@ -376,118 +374,120 @@
     const shadeRect     = plotG.append('rect').attr('class','shade');
     const thresholdLine = plotG.append('line').attr('class','threshold-line');
 
-    /* ───────── MAIN RENDER ───────── */
-    function updateVisualization() {
-      const data = datasets[currentDataset];
-
-      /* current usable width of the plot area */
-      const plotWidth = svg.node().getBoundingClientRect().width
-                        - margin.left - margin.right;
-
-      /* make scale & SVG aware of that width */
-      xScale.range([0, plotWidth]);
-      svg.attr('viewBox',
-        `0 0 ${plotWidth + margin.left + margin.right}`
-        +` ${+svg.attr('data-h') + margin.top + margin.bottom}`);
-
-      /* bin data to nearest 0.1 */
+    /* ───────── Helper functions ───────── */
+    function processData(data) {
       const tickPositions = d3.range(0, 1.1, 0.1);
-      const tickBins = {}; tickPositions.forEach(t => tickBins[t] = []);
+      const tickBins = {};
+      tickPositions.forEach(t => tickBins[t] = []);
+
       data.forEach(d => {
-        const pred   = d.score >= currentThreshold ? 1 : 0;
-        const cat    = d.label ? (pred ? 'tp':'fn') : (pred ? 'fp':'tn');
-        const tick   = tickPositions.reduce((p,c)=>
-                        Math.abs(c-d.score) < Math.abs(p-d.score) ? c : p);
-        tickBins[tick].push({ ...d, category:cat });
+        const pred = d.score >= currentThreshold ? 1 : 0;
+        const cat = d.label ? (pred ? 'tp' : 'fn') : (pred ? 'fp' : 'tn');
+        const tick = tickPositions.reduce((p, c) =>
+          Math.abs(c - d.score) < Math.abs(p - d.score) ? c : p);
+        tickBins[tick].push({ ...d, category: cat });
       });
 
-      /* dynamic height so stacks never clip */
-      const bottomPadding  = 6;
-      const textHeight     = 18;
-      const maxStackDepth  = d3.max(Object.values(tickBins), b => b.length) || 0;
+      const maxStackDepth = d3.max(Object.values(tickBins), b => b.length) || 0;
+      return { tickBins, maxStackDepth };
+    }
+
+    function calculateDimensions(maxStackDepth) {
+      const bottomPadding = 6;
+      const textHeight = 18;
       const height = Math.max(
         fixedHeight,
         bottomPadding + textHeight + SYMBOL_SPACING_Y * maxStackDepth
       );
       const innerHeight = height - bottomPadding;
+      return { height, innerHeight };
+    }
 
-      /* only touch svg.height / viewBox if that changed  */
+    function setupSVG(plotWidth, height, innerHeight) {
+      xScale.range([0, plotWidth]);
+      svg.attr('viewBox',
+        `0 0 ${plotWidth + margin.left + margin.right}`
+        +` ${height + margin.top + margin.bottom}`);
+
       if (+svg.attr('data-h') !== height) {
         svg.attr('viewBox',
-          `0 0 ${plotWidth + margin.left + margin.right}`
-          +` ${height + margin.top + margin.bottom}`)
-           .attr('height', height + margin.top + margin.bottom)
-           .attr('data-h', height);
+          `0 0 ${plotWidth + margin.left + margin.right}` +
+          ` ${height + margin.top + margin.bottom}`)
+          .attr('height', height + margin.top + margin.bottom)
+          .attr('data-h', height);
       }
+    }
 
-      /* x-axis */
+    function renderAxes(plotWidth, innerHeight) {
       plotG.select('.x-axis')
            .attr('transform', `translate(0,${innerHeight})`)
            .call(
              d3.axisBottom(xScale)
                .ticks(11)
-               .tickValues(tickPositions)
+               .tickValues(d3.range(0, 1.1, 0.1))
                .tickFormat(d3.format('.1f'))
                .tickSizeOuter(0)
            )
-           .selectAll('text').attr('font-size','14px');
+           .selectAll('text').attr('font-size', '14px');
 
-      /* extend domain line so symbols over-hang nicely */
       plotG.select('.x-axis').select('path.domain')
            .attr('d', `M${-SYMBOL_HALF_WIDTH},0H${plotWidth + SYMBOL_HALF_WIDTH}`);
 
       plotG.select('.x-axis-label')
            .attr('x', plotWidth / 2)
            .attr('y', innerHeight + margin.bottom - 5);
+    }
 
-      /* threshold guide */
+    function renderThresholdLine(plotWidth, innerHeight) {
       thresholdLine
         .attr('x1', xScale(currentThreshold))
         .attr('x2', xScale(currentThreshold))
         .attr('y1', 0)
         .attr('y2', innerHeight);
+    }
 
-      /* shaded FP area */
+    function renderShade(plotWidth, innerHeight) {
       shadeRect
         .attr('x', xScale(currentThreshold))
         .attr('y', 0)
         .attr('width', Math.max(0, plotWidth + SYMBOL_HALF_WIDTH - xScale(currentThreshold)))
         .attr('height', innerHeight);
+    }
 
-      /* stacked glyphs */
+    function renderPoints(tickBins, plotWidth, innerHeight) {
       const stacked = [];
       Object.entries(tickBins).forEach(([tick, bin]) => {
-        bin.forEach((d,i)=>stacked.push({
+        bin.forEach((d, i) => stacked.push({
           ...d,
-          centerX:+tick,
-          stackIndex:i
+          centerX: +tick,
+          stackIndex: i
         }));
       });
 
-      const pts = plotG.selectAll('.point-dot').data(stacked, d=>d.id);
+      const pts = plotG.selectAll('.point-dot').data(stacked, d => d.id);
 
       pts.enter().append('text')
-        .attr('class','point-dot')
-        .attr('font-family','Arial')
-        .attr('font-size','16px')
-        .attr('text-anchor','middle')
+        .attr('class', 'point-dot')
+        .attr('font-family', 'Arial')
+        .attr('font-size', '16px')
+        .attr('text-anchor', 'middle')
         .merge(pts)
         .attr('x', d => xScale(d.centerX))
-        .attr('y', d => innerHeight - (d.stackIndex+1)*SYMBOL_SPACING_Y)
-        .attr('dominant-baseline','middle')
-        .text(d => d.category==='tp' ? '▢'
-               : d.category==='fp' ? '◉'
-               : d.category==='fn' ? '▣' : '○')
-        .attr('fill', d => d.category==='tp'? '#5eb979'
-                       : d.category==='fn'? '#f8a12f'
-                       : d.category==='tn'? '#3393e6'
-                       : '#ea5252');
+        .attr('y', d => innerHeight - (d.stackIndex + 1) * SYMBOL_SPACING_Y)
+        .attr('dominant-baseline', 'middle')
+        .text(d => d.category === 'tp' ? '▢'
+          : d.category === 'fp' ? '◉'
+          : d.category === 'fn' ? '▣' : '○')
+        .attr('fill', d => d.category === 'tp' ? '#5eb979'
+          : d.category === 'fn' ? '#f8a12f'
+          : d.category === 'tn' ? '#3393e6' : '#ea5252');
 
       pts.exit().remove();
+    }
 
-      /* confusion matrix & metrics */
-      let tp=0, fp=0, fn=0, tn=0;
-      data.forEach(d=>{
+    function updateMetrics(data) {
+      let tp = 0, fp = 0, fn = 0, tn = 0;
+      data.forEach(d => {
         const p = d.score >= currentThreshold ? 1 : 0;
         if (d.label && p) tp++;
         else if (!d.label && p) fp++;
@@ -500,15 +500,29 @@
       document.getElementById('cm-fn-count').textContent = fn;
       document.getElementById('cm-tn-count').textContent = tn;
 
-      const acc = (tp+tn)/data.length,
-            prec= tp+fp? tp/(tp+fp) : 0,
-            rec = tp+fn? tp/(tp+fn) : 0,
-            f1  = prec+rec? 2*prec*rec/(prec+rec) : 0;
+      const acc = (tp + tn) / data.length,
+        prec = tp + fp ? tp / (tp + fp) : 0,
+        rec = tp + fn ? tp / (tp + fn) : 0,
+        f1 = prec + rec ? 2 * prec * rec / (prec + rec) : 0;
 
-      document.getElementById('acc-metric').textContent    = acc.toFixed(3);
-      document.getElementById('prec-metric').textContent   = prec.toFixed(3);
+      document.getElementById('acc-metric').textContent = acc.toFixed(3);
+      document.getElementById('prec-metric').textContent = prec.toFixed(3);
       document.getElementById('recall-metric').textContent = rec.toFixed(3);
-      document.getElementById('f1-metric').textContent     = f1.toFixed(3);
+      document.getElementById('f1-metric').textContent = f1.toFixed(3);
+    }
+
+    function updateVisualization() {
+      const data = datasets[currentDataset];
+      const plotWidth = svg.node().getBoundingClientRect().width
+                        - margin.left - margin.right;
+      const { tickBins, maxStackDepth } = processData(data);
+      const { height, innerHeight } = calculateDimensions(maxStackDepth);
+      setupSVG(plotWidth, height, innerHeight);
+      renderAxes(plotWidth, innerHeight);
+      renderThresholdLine(plotWidth, innerHeight);
+      renderShade(plotWidth, innerHeight);
+      renderPoints(tickBins, plotWidth, innerHeight);
+      updateMetrics(data);
     }
 
     /* ───────── interactions ───────── */
@@ -518,16 +532,16 @@
       updateVisualization();
     });
 
-    document.querySelectorAll('.dataset-btn').forEach(btn => {
-      btn.addEventListener('click', function () {
+    document.querySelector('.dataset-btns').addEventListener('click', function(e) {
+      if (e.target.classList.contains('dataset-btn')) {
         document.querySelectorAll('.dataset-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        currentDataset   = this.dataset.ds;
+        e.target.classList.add('active');
+        currentDataset = e.target.dataset.ds;
         currentThreshold = 0.5;
         document.getElementById('thresholdSlider').value = 0.5;
         document.getElementById('thresholdValue').textContent = '0.50';
         updateVisualization();
-      });
+      }
     });
 
     /* ───────── initial draw & resize hook ───────── */
