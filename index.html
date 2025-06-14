@@ -25,8 +25,9 @@
 
     body {
       background: var(--background-color);
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
       margin: 0;
+      line-height: 1.5;
     }
 
     .container {
@@ -57,6 +58,7 @@
     .dataset-btns {
       display: flex;
       gap: 15px;
+      flex-wrap: wrap;
     }
 
     .dataset-btn {
@@ -64,14 +66,22 @@
       background: #fff;
       color: grey;
       font-size: 1em;
-      padding: 6px 12px;
-      border-radius: 4px;
+      padding: 8px 14px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .dataset-btn:hover {
+      background: #f0f0f0;
+      transform: translateY(-1px);
     }
 
     .dataset-btn.active {
-      background: #e0e0e0;
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
     }
 
     .slider-center {
@@ -86,6 +96,7 @@
       gap: 14px;
       font-size: 1.05em;
       font-weight: 600;
+      flex-wrap: wrap;
     }
 
     .slider-box span {
@@ -95,12 +106,14 @@
     .slider {
       width: 180px;
       accent-color: var(--slider-accent);
+      cursor: pointer;
     }
 
     .slider-value {
       min-width: 48px;
       margin-left: 3px;
       color: var(--text-color);
+      font-family: monospace;
     }
 
     .main-panel {
@@ -115,6 +128,25 @@
       grid-template-columns: 2fr 1fr;
       gap: 28px;
       align-items: start;
+    }
+
+    @media (max-width: 768px) {
+      .first-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 2em;
+      }
+      
+      .slider {
+        width: 140px;
+      }
     }
 
     .right-panel {
@@ -137,6 +169,13 @@
       padding: 22px;
     }
 
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: var(--text-color);
+      font-size: 1.2em;
+    }
+
     .confusion-matrix-table {
       width: 100%;
       border-collapse: collapse;
@@ -147,47 +186,53 @@
 
     .confusion-matrix-table th,
     .confusion-matrix-table td {
-      padding: 10px 16px;
+      padding: 12px 16px;
+      border: 1px solid rgba(0,0,0,0.1);
     }
 
     .confusion-matrix-table th {
       background: var(--card-background);
-      color: grey;
-      font-weight: 400;
+      color: var(--light-text);
+      font-weight: 600;
     }
 
     .confusion-matrix-table .row-label {
       background: var(--card-background);
-      color: grey;
-      font-weight: 400;
+      color: var(--light-text);
+      font-weight: 600;
     }
 
-    .cm-tp { background: var(--tp-color); color: #fff; }
-    .cm-fp { background: var(--fp-color); color: #fff; }
-    .cm-fn { background: var(--fn-color); color: #fff; }
-    .cm-tn { background: var(--tn-color); color: #fff; }
+    .cm-tp { background: var(--tp-color); color: #fff; font-weight: 600; }
+    .cm-fp { background: var(--fp-color); color: #fff; font-weight: 600; }
+    .cm-fn { background: var(--fn-color); color: #fff; font-weight: 600; }
+    .cm-tn { background: var(--tn-color); color: #fff; font-weight: 600; }
 
     .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
       gap: 20px;
       margin-top: 12px;
     }
 
     .metric-box {
       text-align: center;
+      padding: 12px;
+      background: rgba(127, 106, 247, 0.05);
+      border-radius: 8px;
     }
 
     .metric-label {
       color: var(--primary-color);
-      font-size: 0.98em;
-      font-weight: 500;
+      font-size: 0.9em;
+      font-weight: 600;
+      margin-bottom: 4px;
     }
 
     .metric-value {
-      font-size: 1.44em;
+      font-size: 1.4em;
       font-weight: bold;
       color: #252550;
+      font-family: monospace;
     }
 
     details.card summary {
@@ -198,6 +243,11 @@
       list-style: none;
       margin: 0;
       padding: 0;
+      transition: color 0.2s ease;
+    }
+
+    details.card summary:hover {
+      color: var(--primary-color);
     }
 
     details.card summary::-webkit-details-marker {
@@ -206,10 +256,12 @@
 
     details.card[open] summary::before {
       content: "▼ ";
+      color: var(--primary-color);
     }
 
     details.card:not([open]) summary::before {
       content: "► ";
+      color: var(--secondary-color);
     }
 
     .footer-note {
@@ -217,6 +269,7 @@
       font-size: 0.85em;
       margin-top: 12px;
       color: var(--light-text);
+      font-style: italic;
     }
 
     .axis text {
@@ -232,13 +285,48 @@
 
     .shade {
       fill: #ffd2d2;
-      opacity: 0.30;
+      opacity: 0.25;
     }
 
     .threshold-line {
       stroke: #e63946;
-      stroke-width: 2;
+      stroke-width: 3;
       stroke-dasharray: 4 3;
+    }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+      font-size: 0.9em;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-symbol {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .dataset-btn {
+        transition: none;
+      }
+      
+      .dataset-btn:hover {
+        transform: none;
+      }
     }
   </style>
 </head>
@@ -257,13 +345,33 @@
           <h3>Distribution and Predictions</h3>
 
           <!-- SVG – dynamic height, dynamic width -->
-          <svg id="scorePlot" preserveAspectRatio="none" width="100%" height="320"></svg>
+          <svg id="scorePlot" preserveAspectRatio="none" width="100%" height="320" role="img" aria-label="Score distribution visualization"></svg>
+
+          <div class="legend">
+            <div class="legend-item">
+              <span class="legend-symbol" style="color: #5eb979;">▢</span>
+              <span>True Positive</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-symbol" style="color: #ea5252;">◉</span>
+              <span>False Positive</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-symbol" style="color: #f8a12f;">▣</span>
+              <span>False Negative</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-symbol" style="color: #3393e6;">○</span>
+              <span>True Negative</span>
+            </div>
+          </div>
 
           <div class="slider-center">
             <div class="slider-box">
               <span>Classification Threshold</span>
               <input type="range" min="0" max="1" step="0.01"
-                     value="0.5" class="slider" id="thresholdSlider">
+                     value="0.5" class="slider" id="thresholdSlider" 
+                     aria-label="Classification threshold">
               <span class="slider-value" id="thresholdValue">0.50</span>
             </div>
           </div>
@@ -273,280 +381,434 @@
         <aside class="right-panel">
           <div class="card">
             <h3>Dataset</h3>
-            <div class="dataset-btns">
-              <button class="dataset-btn active" data-ds="separated">Separated</button>
-              <button class="dataset-btn" data-ds="overlapped">Overlapped</button>
+            <div class="dataset-btns" role="group" aria-label="Dataset selection">
+              <button class="dataset-btn active" data-ds="separated">Well Separated</button>
+              <button class="dataset-btn" data-ds="overlapped">Overlapping</button>
               <button class="dataset-btn" data-ds="imbalanced">Imbalanced</button>
             </div>
           </div>
 
           <div class="card">
             <h3>Confusion Matrix</h3>
-            <table class="confusion-matrix-table">
-              <tr><th></th><th>Actual&nbsp;Positive</th><th>Actual&nbsp;Negative</th></tr>
-              <tr>
-                <td class="row-label">Pred.&nbsp;Positive</td>
-                <td class="cm-tp">▢<br>TP&nbsp;=&nbsp;<span id="cm-tp-count">0</span></td>
-                <td class="cm-fp">◉<br>FP&nbsp;=&nbsp;<span id="cm-fp-count">0</span></td>
-              </tr>
-              <tr>
-                <td class="row-label">Pred.&nbsp;Negative</td>
-                <td class="cm-fn">▣<br>FN&nbsp;=&nbsp;<span id="cm-fn-count">0</span></td>
-                <td class="cm-tn">○<br>TN&nbsp;=&nbsp;<span id="cm-tn-count">0</span></td>
-              </tr>
+            <table class="confusion-matrix-table" role="table" aria-label="Confusion matrix showing classification results">
+              <thead>
+                <tr><th></th><th>Actual&nbsp;Positive</th><th>Actual&nbsp;Negative</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="row-label">Pred.&nbsp;Positive</td>
+                  <td class="cm-tp">▢<br>TP&nbsp;=&nbsp;<span id="cm-tp-count">0</span></td>
+                  <td class="cm-fp">◉<br>FP&nbsp;=&nbsp;<span id="cm-fp-count">0</span></td>
+                </tr>
+                <tr>
+                  <td class="row-label">Pred.&nbsp;Negative</td>
+                  <td class="cm-fn">▣<br>FN&nbsp;=&nbsp;<span id="cm-fn-count">0</span></td>
+                  <td class="cm-tn">○<br>TN&nbsp;=&nbsp;<span id="cm-tn-count">0</span></td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </aside>
       </div>
 
       <div class="second-row">
-        <details class="card">
+        <details class="card" open>
           <summary>Performance Metrics</summary>
           <div class="metrics-grid" style="margin-top:14px;">
-            <div class="metric-box"><div class="metric-label">Accuracy</div><div class="metric-value" id="acc-metric">0.00</div></div>
-            <div class="metric-box"><div class="metric-label">Precision</div><div class="metric-value" id="prec-metric">0.00</div></div>
-            <div class="metric-box"><div class="metric-label">Recall</div><div class="metric-value" id="recall-metric">0.00</div></div>
-            <div class="metric-box"><div class="metric-label">F1&nbsp;Score</div><div class="metric-value" id="f1-metric">0.00</div></div>
+            <div class="metric-box"><div class="metric-label">Accuracy</div><div class="metric-value" id="acc-metric">0.000</div></div>
+            <div class="metric-box"><div class="metric-label">Precision</div><div class="metric-value" id="prec-metric">0.000</div></div>
+            <div class="metric-box"><div class="metric-label">Recall</div><div class="metric-value" id="recall-metric">0.000</div></div>
+            <div class="metric-box"><div class="metric-label">F1&nbsp;Score</div><div class="metric-value" id="f1-metric">0.000</div></div>
           </div>
         </details>
       </div>
     </main>
 
     <footer class="footer-note">
-      Adjust the threshold slider to see how the balance between false positives and false negatives shifts.
+      Adjust the threshold slider to see how the balance between false positives and false negatives shifts. The red dashed line shows the current threshold, and the pink area represents scores that will be classified as positive.
     </footer>
   </div>
 
   <script>
-    /* ───────── constants ───────── */
-    const SYMBOL_SPACING_Y  = 18;  // vertical gap between stacked dots
-    const SYMBOL_HALF_WIDTH = 8;   // half glyph width for x-axis over-hang
-    const fixedHeight       = 300; // minimum inner plot height
-    const margin            = { top:20, right:20, bottom:40, left:40 };
+    /* ───────── Enhanced constants and configuration ───────── */
+    const CONFIG = {
+      SYMBOL_SPACING_Y: 18,
+      SYMBOL_HALF_WIDTH: 8,
+      FIXED_HEIGHT: 300,
+      MARGIN: { top: 20, right: 20, bottom: 40, left: 40 },
+      DEBOUNCE_DELAY: 16, // ~60fps
+      DATASET_SIZE: 100,
+      ANIMATION_DURATION: 200
+    };
 
-    /* ───────── dataset factory ───────── */
-    function generateDatasets() {
-      const datasets = {};
-      function normalRandom(mean, std) {
+    const SYMBOLS = {
+      tp: '▢',
+      fp: '◉', 
+      fn: '▣',
+      tn: '○'
+    };
+
+    const COLORS = {
+      tp: '#5eb979',
+      fp: '#ea5252',
+      fn: '#f8a12f',
+      tn: '#3393e6'
+    };
+
+    /* ───────── Optimized dataset generation with caching ───────── */
+    class DatasetGenerator {
+      constructor() {
+        this.cache = new Map();
+      }
+
+      normalRandom(mean, std) {
+        // Box-Muller transform with clamping
         let u = 0, v = 0;
         while (u === 0) u = Math.random();
         while (v === 0) v = Math.random();
         const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2 * Math.PI * v);
         return Math.max(0, Math.min(1, z * std + mean));
       }
-      ['separated', 'overlapped', 'imbalanced'].forEach(ds => {
-        const arr = [];
-        for (let i = 0; i < 100; i++) {
-          const label = ds === 'imbalanced' ? (i < 80 ? 0 : 1) : (i < 50 ? 0 : 1);
-          const mean = label
-            ? (ds === 'separated' ? 0.8 : ds === 'overlapped' ? 0.6 : 0.7)
-            : (ds === 'separated' ? 0.2 : ds === 'overlapped' ? 0.4 : 0.3);
-          const std  = label
-            ? (ds === 'separated' ? 0.1 : ds === 'overlapped' ? 0.2 : 0.15)
-            : (ds === 'separated' ? 0.1 : ds === 'overlapped' ? 0.2 : 0.15);
-          arr.push({ id:i, score:normalRandom(mean,std), label });
+
+      generateDataset(type) {
+        if (this.cache.has(type)) {
+          return this.cache.get(type);
         }
-        datasets[ds] = arr;
-      });
-      return datasets;
-    }
 
-    /* ───────── globals & static SVG scaffold ───────── */
-    const datasets = generateDatasets();
-    let currentDataset   = 'separated';
-    let currentThreshold = 0.5;
+        const configs = {
+          separated: { posRatio: 0.5, posMean: 0.8, posStd: 0.1, negMean: 0.2, negStd: 0.1 },
+          overlapped: { posRatio: 0.5, posMean: 0.6, posStd: 0.2, negMean: 0.4, negStd: 0.2 },
+          imbalanced: { posRatio: 0.2, posMean: 0.7, posStd: 0.15, negMean: 0.3, negStd: 0.15 }
+        };
 
-    const svg   = d3.select('#scorePlot').attr('data-h', fixedHeight);
-    const plotG = svg.append('g')
-                     .attr('transform', `translate(${margin.left},${margin.top})`);
+        const config = configs[type];
+        const data = [];
+        const positiveCount = Math.floor(CONFIG.DATASET_SIZE * config.posRatio);
 
-    const xScale = d3.scaleLinear().domain([0, 1]);   // range filled each draw
+        for (let i = 0; i < CONFIG.DATASET_SIZE; i++) {
+          const label = i < positiveCount ? 1 : 0;
+          const mean = label ? config.posMean : config.negMean;
+          const std = label ? config.posStd : config.negStd;
+          
+          data.push({
+            id: i,
+            score: this.normalRandom(mean, std),
+            label
+          });
+        }
 
-    plotG.append('g').attr('class','axis x-axis');
-    plotG.append('text')
-         .attr('class','x-axis-label')
-         .attr('text-anchor','middle')
-         .attr('font-weight',600)
-         .attr('font-size','1.09em')
-         .attr('fill','#222')
-         .text('Model Score');
+        // Shuffle for better visual distribution
+        for (let i = data.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [data[i], data[j]] = [data[j], data[i]];
+        }
 
-    const shadeRect     = plotG.append('rect').attr('class','shade');
-    const thresholdLine = plotG.append('line').attr('class','threshold-line');
+        this.cache.set(type, data);
+        return data;
+      }
 
-    /* ───────── Helper functions ───────── */
-    function processData(data) {
-      const tickPositions = d3.range(0, 1.1, 0.1);
-      const tickBins = {};
-      tickPositions.forEach(t => tickBins[t] = []);
-
-      data.forEach(d => {
-        const pred = d.score >= currentThreshold ? 1 : 0;
-        const cat = d.label ? (pred ? 'tp' : 'fn') : (pred ? 'fp' : 'tn');
-        const tick = tickPositions.reduce((p, c) =>
-          Math.abs(c - d.score) < Math.abs(p - d.score) ? c : p);
-        tickBins[tick].push({ ...d, category: cat });
-      });
-
-      const maxStackDepth = d3.max(Object.values(tickBins), b => b.length) || 0;
-      return { tickBins, maxStackDepth };
-    }
-
-    function calculateDimensions(maxStackDepth) {
-      const bottomPadding = 6;
-      const textHeight = 18;
-      const height = Math.max(
-        fixedHeight,
-        bottomPadding + textHeight + SYMBOL_SPACING_Y * maxStackDepth
-      );
-      const innerHeight = height - bottomPadding;
-      return { height, innerHeight };
-    }
-
-    function setupSVG(plotWidth, height, innerHeight) {
-      xScale.range([0, plotWidth]);
-      svg.attr('viewBox',
-        `0 0 ${plotWidth + margin.left + margin.right}`
-        +` ${height + margin.top + margin.bottom}`);
-
-      if (+svg.attr('data-h') !== height) {
-        svg.attr('viewBox',
-          `0 0 ${plotWidth + margin.left + margin.right}` +
-          ` ${height + margin.top + margin.bottom}`)
-          .attr('height', height + margin.top + margin.bottom)
-          .attr('data-h', height);
+      generateAllDatasets() {
+        return {
+          separated: this.generateDataset('separated'),
+          overlapped: this.generateDataset('overlapped'),
+          imbalanced: this.generateDataset('imbalanced')
+        };
       }
     }
 
-    function renderAxes(plotWidth, innerHeight) {
-      plotG.select('.x-axis')
-           .attr('transform', `translate(0,${innerHeight})`)
-           .call(
-             d3.axisBottom(xScale)
-               .ticks(11)
-               .tickValues(d3.range(0, 1.1, 0.1))
-               .tickFormat(d3.format('.1f'))
-               .tickSizeOuter(0)
-           )
-           .selectAll('text').attr('font-size', '14px');
-
-      plotG.select('.x-axis').select('path.domain')
-           .attr('d', `M${-SYMBOL_HALF_WIDTH},0H${plotWidth + SYMBOL_HALF_WIDTH}`);
-
-      plotG.select('.x-axis-label')
-           .attr('x', plotWidth / 2)
-           .attr('y', innerHeight + margin.bottom - 5);
-    }
-
-    function renderThresholdLine(plotWidth, innerHeight) {
-      thresholdLine
-        .attr('x1', xScale(currentThreshold))
-        .attr('x2', xScale(currentThreshold))
-        .attr('y1', 0)
-        .attr('y2', innerHeight);
-    }
-
-    function renderShade(plotWidth, innerHeight) {
-      shadeRect
-        .attr('x', xScale(currentThreshold))
-        .attr('y', 0)
-        .attr('width', Math.max(0, plotWidth + SYMBOL_HALF_WIDTH - xScale(currentThreshold)))
-        .attr('height', innerHeight);
-    }
-
-    function renderPoints(tickBins, plotWidth, innerHeight) {
-      const stacked = [];
-      Object.entries(tickBins).forEach(([tick, bin]) => {
-        bin.forEach((d, i) => stacked.push({
-          ...d,
-          centerX: +tick,
-          stackIndex: i
-        }));
-      });
-
-      const pts = plotG.selectAll('.point-dot').data(stacked, d => d.id);
-
-      pts.enter().append('text')
-        .attr('class', 'point-dot')
-        .attr('font-family', 'Arial')
-        .attr('font-size', '16px')
-        .attr('text-anchor', 'middle')
-        .merge(pts)
-        .attr('x', d => xScale(d.centerX))
-        .attr('y', d => innerHeight - (d.stackIndex + 1) * SYMBOL_SPACING_Y)
-        .attr('dominant-baseline', 'middle')
-        .text(d => d.category === 'tp' ? '▢'
-          : d.category === 'fp' ? '◉'
-          : d.category === 'fn' ? '▣' : '○')
-        .attr('fill', d => d.category === 'tp' ? '#5eb979'
-          : d.category === 'fn' ? '#f8a12f'
-          : d.category === 'tn' ? '#3393e6' : '#ea5252');
-
-      pts.exit().remove();
-    }
-
-    function updateMetrics(data) {
-      let tp = 0, fp = 0, fn = 0, tn = 0;
-      data.forEach(d => {
-        const p = d.score >= currentThreshold ? 1 : 0;
-        if (d.label && p) tp++;
-        else if (!d.label && p) fp++;
-        else if (d.label && !p) fn++;
-        else tn++;
-      });
-
-      document.getElementById('cm-tp-count').textContent = tp;
-      document.getElementById('cm-fp-count').textContent = fp;
-      document.getElementById('cm-fn-count').textContent = fn;
-      document.getElementById('cm-tn-count').textContent = tn;
-
-      const acc = (tp + tn) / data.length,
-        prec = tp + fp ? tp / (tp + fp) : 0,
-        rec = tp + fn ? tp / (tp + fn) : 0,
-        f1 = prec + rec ? 2 * prec * rec / (prec + rec) : 0;
-
-      document.getElementById('acc-metric').textContent = acc.toFixed(3);
-      document.getElementById('prec-metric').textContent = prec.toFixed(3);
-      document.getElementById('recall-metric').textContent = rec.toFixed(3);
-      document.getElementById('f1-metric').textContent = f1.toFixed(3);
-    }
-
-    function updateVisualization() {
-      const data = datasets[currentDataset];
-      const plotWidth = svg.node().getBoundingClientRect().width
-                        - margin.left - margin.right;
-      const { tickBins, maxStackDepth } = processData(data);
-      const { height, innerHeight } = calculateDimensions(maxStackDepth);
-      setupSVG(plotWidth, height, innerHeight);
-      renderAxes(plotWidth, innerHeight);
-      renderThresholdLine(plotWidth, innerHeight);
-      renderShade(plotWidth, innerHeight);
-      renderPoints(tickBins, plotWidth, innerHeight);
-      updateMetrics(data);
-    }
-
-    /* ───────── interactions ───────── */
-    document.getElementById('thresholdSlider').addEventListener('input', e => {
-      currentThreshold = +e.target.value;
-      document.getElementById('thresholdValue').textContent = currentThreshold.toFixed(2);
-      updateVisualization();
-    });
-
-    document.querySelector('.dataset-btns').addEventListener('click', function(e) {
-      if (e.target.classList.contains('dataset-btn')) {
-        document.querySelectorAll('.dataset-btn').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        currentDataset = e.target.dataset.ds;
-        currentThreshold = 0.5;
-        document.getElementById('thresholdSlider').value = 0.5;
-        document.getElementById('thresholdValue').textContent = '0.50';
-        updateVisualization();
+    /* ───────── Application state management ───────── */
+    class AppState {
+      constructor() {
+        this.currentDataset = 'separated';
+        this.currentThreshold = 0.5;
+        this.isUpdating = false;
+        this.updateQueue = [];
       }
-    });
 
-    /* ───────── initial draw & resize hook ───────── */
-    updateVisualization();
-    window.addEventListener('resize', updateVisualization);
+      setDataset(dataset) {
+        if (this.currentDataset !== dataset) {
+          this.currentDataset = dataset;
+          return true;
+        }
+        return false;
+      }
+
+      setThreshold(threshold) {
+        const rounded = Math.round(threshold * 100) / 100;
+        if (this.currentThreshold !== rounded) {
+          this.currentThreshold = rounded;
+          return true;
+        }
+        return false;
+      }
+    }
+
+    /* ───────── Optimized visualization engine ───────── */
+    class ThresholdVisualization {
+      constructor() {
+        this.dataGenerator = new DatasetGenerator();
+        this.state = new AppState();
+        this.datasets = this.dataGenerator.generateAllDatasets();
+        
+        this.setupSVG();
+        this.setupEventListeners();
+        this.scheduleUpdate = this.debounce(this.updateVisualization.bind(this), CONFIG.DEBOUNCE_DELAY);
+      }
+
+      debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+        };
+      }
+
+      setupSVG() {
+        this.svg = d3.select('#scorePlot').attr('data-h', CONFIG.FIXED_HEIGHT);
+        this.plotG = this.svg.append('g')
+                          .attr('transform', `translate(${CONFIG.MARGIN.left},${CONFIG.MARGIN.top})`);
+
+        this.xScale = d3.scaleLinear().domain([0, 1]);
+
+        // Create reusable elements
+        this.plotG.append('g').attr('class', 'axis x-axis');
+        this.plotG.append('text')
+              .attr('class', 'x-axis-label')
+              .attr('text-anchor', 'middle')
+              .attr('font-weight', 600)
+              .attr('font-size', '1.09em')
+              .attr('fill', '#222')
+              .text('Model Score');
+
+        this.shadeRect = this.plotG.append('rect').attr('class', 'shade');
+        this.thresholdLine = this.plotG.append('line').attr('class', 'threshold-line');
+      }
+
+      setupEventListeners() {
+        // Threshold slider with debouncing
+        const slider = document.getElementById('thresholdSlider');
+        const valueDisplay = document.getElementById('thresholdValue');
+        
+        slider.addEventListener('input', (e) => {
+          const newThreshold = parseFloat(e.target.value);
+          valueDisplay.textContent = newThreshold.toFixed(2);
+          
+          if (this.state.setThreshold(newThreshold)) {
+            this.scheduleUpdate();
+          }
+        });
+
+        // Dataset buttons
+        document.querySelector('.dataset-btns').addEventListener('click', (e) => {
+          if (e.target.classList.contains('dataset-btn')) {
+            const newDataset = e.target.dataset.ds;
+            
+            if (this.state.setDataset(newDataset)) {
+              // Update UI
+              document.querySelectorAll('.dataset-btn').forEach(b => b.classList.remove('active'));
+              e.target.classList.add('active');
+              
+              // Reset threshold
+              this.state.setThreshold(0.5);
+              slider.value = 0.5;
+              valueDisplay.textContent = '0.50';
+              
+              this.scheduleUpdate();
+            }
+          }
+        });
+
+        // Optimized resize handler
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => this.scheduleUpdate(), 100);
+        });
+      }
+
+      processData(data) {
+        const tickPositions = Array.from({length: 11}, (_, i) => i / 10);
+        const tickBins = Object.fromEntries(tickPositions.map(t => [t, []]));
+
+        // Vectorized processing
+        data.forEach(d => {
+          const pred = d.score >= this.state.currentThreshold ? 1 : 0;
+          const category = d.label ? (pred ? 'tp' : 'fn') : (pred ? 'fp' : 'tn');
+          
+          // Find closest tick
+          const tick = tickPositions.reduce((prev, curr) =>
+            Math.abs(curr - d.score) < Math.abs(prev - d.score) ? curr : prev
+          );
+          
+          tickBins[tick].push({ ...d, category });
+        });
+
+        const maxStackDepth = Math.max(...Object.values(tickBins).map(b => b.length));
+        return { tickBins, maxStackDepth };
+      }
+
+      calculateDimensions(maxStackDepth) {
+        const bottomPadding = 6;
+        const textHeight = 18;
+        const height = Math.max(
+          CONFIG.FIXED_HEIGHT,
+          bottomPadding + textHeight + CONFIG.SYMBOL_SPACING_Y * maxStackDepth
+        );
+        const innerHeight = height - bottomPadding;
+        return { height, innerHeight };
+      }
+
+      setupSVGDimensions(plotWidth, height, innerHeight) {
+        this.xScale.range([0, plotWidth]);
+        
+        const viewBox = `0 0 ${plotWidth + CONFIG.MARGIN.left + CONFIG.MARGIN.right} ${height + CONFIG.MARGIN.top + CONFIG.MARGIN.bottom}`;
+        
+        if (this.svg.attr('viewBox') !== viewBox) {
+          this.svg.attr('viewBox', viewBox)
+                 .attr('height', height + CONFIG.MARGIN.top + CONFIG.MARGIN.bottom)
+                 .attr('data-h', height);
+        }
+      }
+
+      renderAxes(plotWidth, innerHeight) {
+        this.plotG.select('.x-axis')
+                  .attr('transform', `translate(0,${innerHeight})`)
+                  .call(
+                    d3.axisBottom(this.xScale)
+                      .ticks(11)
+                      .tickValues(d3.range(0, 1.1, 0.1))
+                      .tickFormat(d3.format('.1f'))
+                      .tickSizeOuter(0)
+                  )
+                  .selectAll('text')
+                  .attr('font-size', '14px');
+
+        // Extend axis line for visual balance
+        this.plotG.select('.x-axis').select('path.domain')
+                  .attr('d', `M${-CONFIG.SYMBOL_HALF_WIDTH},0H${plotWidth + CONFIG.SYMBOL_HALF_WIDTH}`);
+
+        this.plotG.select('.x-axis-label')
+                  .attr('x', plotWidth / 2)
+                  .attr('y', innerHeight + CONFIG.MARGIN.bottom - 5);
+      }
+
+      renderThresholdElements(plotWidth, innerHeight) {
+        const thresholdX = this.xScale(this.state.currentThreshold);
+        
+        // Threshold line
+        this.thresholdLine
+          .attr('x1', thresholdX)
+          .attr('x2', thresholdX)
+          .attr('y1', 0)
+          .attr('y2', innerHeight);
+
+        // Prediction shade
+        this.shadeRect
+          .attr('x', thresholdX)
+          .attr('y', 0)
+          .attr('width', Math.max(0, plotWidth + CONFIG.SYMBOL_HALF_WIDTH - thresholdX))
+          .attr('height', innerHeight);
+      }
+
+      renderPoints(tickBins, plotWidth, innerHeight) {
+        // Flatten and prepare data for rendering
+        const stackedData = [];
+        Object.entries(tickBins).forEach(([tick, bin]) => {
+          bin.forEach((d, i) => {
+            stackedData.push({
+              ...d,
+              centerX: parseFloat(tick),
+              stackIndex: i
+            });
+          });
+        });
+
+        // Efficient D3 data join
+        const points = this.plotG.selectAll('.point-dot')
+                                 .data(stackedData, d => d.id);
+
+        // Enter + update
+        points.enter()
+          .append('text')
+          .attr('class', 'point-dot')
+          .attr('font-family', 'system-ui, -apple-system, sans-serif')
+          .attr('font-size', '16px')
+          .attr('text-anchor', 'middle')
+          .attr('dominant-baseline', 'middle')
+          .merge(points)
+          .attr('x', d => this.xScale(d.centerX))
+          .attr('y', d => innerHeight - (d.stackIndex + 1) * CONFIG.SYMBOL_SPACING_Y)
+          .text(d => SYMBOLS[d.category])
+          .attr('fill', d => COLORS[d.category]);
+
+        // Exit
+        points.exit().remove();
+      }
+
+      updateMetrics(data) {
+        const metrics = { tp: 0, fp: 0, fn: 0, tn: 0 };
+        
+        // Vectorized calculation
+        data.forEach(d => {
+          const pred = d.score >= this.state.currentThreshold ? 1 : 0;
+          const key = d.label ? (pred ? 'tp' : 'fn') : (pred ? 'fp' : 'tn');
+          metrics[key]++;
+        });
+
+        // Update confusion matrix
+        Object.entries(metrics).forEach(([key, value]) => {
+          document.getElementById(`cm-${key}-count`).textContent = value;
+        });
+
+        // Calculate and update performance metrics
+        const total = data.length;
+        const accuracy = (metrics.tp + metrics.tn) / total;
+        const precision = (metrics.tp + metrics.fp) ? metrics.tp / (metrics.tp + metrics.fp) : 0;
+        const recall = (metrics.tp + metrics.fn) ? metrics.tp / (metrics.tp + metrics.fn) : 0;
+        const f1 = (precision + recall) ? 2 * precision * recall / (precision + recall) : 0;
+
+        document.getElementById('acc-metric').textContent = accuracy.toFixed(3);
+        document.getElementById('prec-metric').textContent = precision.toFixed(3);
+        document.getElementById('recall-metric').textContent = recall.toFixed(3);
+        document.getElementById('f1-metric').textContent = f1.toFixed(3);
+      }
+
+      updateVisualization() {
+        if (this.state.isUpdating) return;
+        
+        this.state.isUpdating = true;
+        
+        try {
+          const data = this.datasets[this.state.currentDataset];
+          const plotWidth = this.svg.node().getBoundingClientRect().width - CONFIG.MARGIN.left - CONFIG.MARGIN.right;
+          
+          const { tickBins, maxStackDepth } = this.processData(data);
+          const { height, innerHeight } = this.calculateDimensions(maxStackDepth);
+          
+          this.setupSVGDimensions(plotWidth, height, innerHeight);
+          this.renderAxes(plotWidth, innerHeight);
+          this.renderThresholdElements(plotWidth, innerHeight);
+          this.renderPoints(tickBins, plotWidth, innerHeight);
+          this.updateMetrics(data);
+        } finally {
+          this.state.isUpdating = false;
+        }
+      }
+
+      initialize() {
+        this.updateVisualization();
+      }
+    }
+
+    /* ───────── Initialize application ───────── */
+    document.addEventListener('DOMContentLoaded', () => {
+      const app = new ThresholdVisualization();
+      app.initialize();
+    });
   </script>
 </body>
 </html>
