@@ -1,0 +1,107 @@
+:root {
+  /* — Color Palette — */
+  --primary-color:   #2563eb;
+  --secondary-color: #4b5563;
+  --background:      #f5f7fa;
+  --header-bg:       #eaf1fb;
+  --card-bg:         #f9fafb;
+
+  /* — Elevation & Corners — */
+  --container-shadow:    0 2px 16px rgba(0,0,0,0.07);
+  --card-shadow:         0 1px 6px  rgba(37,99,235,0.03);
+  --border-radius:       8px;
+
+  /* — Typography — */
+  --font-family: Arial, sans-serif;
+  --text-color:  #333;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--background);
+  font-family: var(--font-family);
+  color: var(--text-color);
+  line-height: 1.5;
+}
+
+/* — Main container — */
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: var(--container-shadow);
+  overflow: hidden;
+}
+
+/* — Unified Header — */
+.header {
+  background: var(--header-bg);
+  padding: 24px 32px;
+  border-bottom: 1px solid #d2e3f5;
+}
+.header h1 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+.header p {
+  margin: 0;
+  color: var(--secondary-color);
+  font-size: 1rem;
+}
+
+/* — Controls / Subtitle area — */
+.controls,
+.subtitle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 32px;
+  flex-wrap: wrap;
+}
+
+/* — Buttons & Selects — */
+button,
+select,
+.dataset-btn {
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 8px 16px;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: var(--card-shadow);
+  transition: background 0.2s;
+}
+button:hover,
+select:hover,
+.dataset-btn:hover {
+  background: #1743a2;
+}
+
+/* — Cards & Chart wrappers — */
+.chart-section,
+.main-panel {
+  padding: 0 32px;
+}
+.chart-card,
+.card,
+.formula-card,
+.explanation-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 20px;
+  margin: 16px 0;
+}
+
+/* — Minor tweaks — */
+select { padding: 6px 12px; }
+.slider { accent-color: var(--primary-color); }
