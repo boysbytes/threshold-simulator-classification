@@ -5,16 +5,302 @@
   <title>Threshold Simulation for Classifiers</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <style>
+    :root {
+      --primary-color: #7f6af7;
+      --secondary-color: #8b89a8;
+      --background-color: #f7f7fb;
+      --card-background: #f9faff;
+      --card-shadow: 0 2px 8px #efeefa6a;
+      --text-color: #313164;
+      --light-text: #666;
+      --tp-color: #5eb979;
+      --fp-color: #ea5252;
+      --fn-color: #f8a12f;
+      --tn-color: #3393e6;
+      --slider-accent: #63e6be;
+      --border-color: #ccc;
+      --border-radius: 5px;
+    }
 
-  <link rel="stylesheet" href="common.css">
-  
+    body {
+      background: var(--background-color);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: var(--border-radius);
+      box-shadow: 0 12px 28px rgba(120, 120, 180, 0.11);
+      padding: 36px 26px 18px;
+    }
+
+    h1 {
+      font-size: 2em;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 0;
+      color: var(--primary-color);
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 1em;
+      color: var(--secondary-color);
+      margin: 4px 0 26px;
+    }
+
+    .dataset-btns {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .dataset-btn {
+      border: 1px solid var(--border-color);
+      background: #fff;
+      color: grey;
+      font-size: 0.8em;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .dataset-btn:hover {
+      background: #f0f0f0;
+      transform: translateY(-1px);
+    }
+
+    .dataset-btn.active {
+      background: var(--primary-color);
+      color: white;
+      border-color: var(--primary-color);
+    }
+
+    .slider-center {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .slider-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 1.05em;
+      font-weight: 600;
+      flex-wrap: wrap;
+    }
+
+    .slider-box span {
+      color: var(--text-color);
+    }
+
+    .slider {
+      width: 180px;
+      accent-color: var(--slider-accent);
+      cursor: pointer;
+    }
+
+    .slider-value {
+      min-width: 48px;
+      margin-left: 3px;
+      color: var(--text-color);
+      font-family: monospace;
+    }
+
+    .main-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      margin-top: 14px;
+    }
+
+    .first-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    @media (max-width: 768px) {
+      .first-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 2em;
+      }
+      
+      .slider {
+        width: 140px;
+      }
+    }
+
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .card {
+      background: var(--card-background);
+      border-radius: var(--border-radius);
+      box-shadow: var(--card-shadow);
+      padding: 26px 22px 22px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 16px;
+      color: var(--text-color);
+      font-size: 1.2em;
+    }
+
+    .confusion-matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9em;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .confusion-matrix-table th,
+    .confusion-matrix-table td {
+      padding: 12px 16px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .confusion-matrix-table th {
+      background: var(--card-background);
+      color: var(--light-text);
+      font-weight: 600;
+    }
+
+    .confusion-matrix-table .row-label {
+      background: var(--card-background);
+      color: var(--light-text);
+      font-weight: 600;
+    }
+
+    .cm-tp { background: var(--tp-color); color: #fff; font-weight: 600; }
+    .cm-fp { background: var(--fp-color); color: #fff; font-weight: 600; }
+    .cm-fn { background: var(--fn-color); color: #fff; font-weight: 600; }
+    .cm-tn { background: var(--tn-color); color: #fff; font-weight: 600; }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .metric-box {
+      text-align: center;
+      padding: 14px 12px;
+      background: rgba(127, 106, 247, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(127, 106, 247, 0.1);
+    }
+
+    .metric-label {
+      color: var(--primary-color);
+      font-size: 0.9em;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #252550;
+      font-family: monospace;
+    }
+
+    .footer-note {
+      text-align: left;
+      font-size: 0.85em;
+      margin-top: 12px;
+      color: var(--light-text);
+      font-style: italic;
+    }
+
+    .axis text {
+      fill: var(--light-text);
+      font-size: 13px;
+    }
+
+    .x-axis-label {
+      font-weight: 600;
+      font-size: 1em;
+      fill: #333;
+    }
+
+    .shade {
+      fill: #ffd2d2;
+      opacity: 0.25;
+    }
+
+    .threshold-line {
+      stroke: #e63946;
+      stroke-width: 3;
+      stroke-dasharray: 4 3;
+    }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+      font-size: 0.9em;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-symbol {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .dataset-btn {
+        transition: none;
+      }
+      
+      .dataset-btn:hover {
+        transform: none;
+      }
+    }
+  </style>
 </head>
 
 <body>
   <div class="container">
-    <div class="header">
-      <h1>Threshold Simulation for Classifiers</h1>
-      <p>Explore how classification threshold affects model performance across different datasets</p>
+    <h1>Threshold Simulation for Classifiers</h1>
+    <div class="subtitle">
+      Explore how classification threshold affects model performance across different datasets
     </div>
 
     <main class="main-panel">
